@@ -2189,3 +2189,32 @@ select::-ms-expand {
 .card-exercise {
   margin-top: 25px;
 }
+
+.exercise-video {
+  margin-top: 25px;
+}
+
+#header-session {
+  background-color: #37517E;
+  transition: all 0.2s;
+  z-index: 997;
+  padding: 15px 0;
+}
+
+#header-session .logo {
+  font-size: 30px;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+#header-session .logo a {
+  color: #fff;
+}
+
+#header-session .logo img {
+  max-height: 40px;
+}
