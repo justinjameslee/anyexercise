@@ -17,7 +17,7 @@ exercise_option = 0
 def exercise():
     global exercise_option
     if request.method == 'POST':
-        exercise_option = request.form.get("exercise_select")
+        exercise_option = int(request.form.get("exercise_select"))
     return render_template('exercise.html', exercise_option=str(exercise_option))
 
 @app.route('/login')
@@ -51,6 +51,13 @@ def calculate_angle(a,b,c):
     radians = np.arctan2(c[1]-b[1], c[0]-b[0]) - np.arctan2(a[1]-b[1], a[0]-b[0])
     angle = np.abs(radians*180.0/np.pi)
     return angle
+
+def draw_landmarks(image, results):
+    # Render detections
+    mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+        mp_drawing.DrawingSpec(color=(245,117,66), thickness=1, circle_radius=2), 
+        mp_drawing.DrawingSpec(color=(128,128,128), thickness=1, circle_radius=2) 
+        )               
 
 def sidebend(data, landmarks):
     start = data['start'] 
@@ -150,72 +157,54 @@ def gen():
         
             # Make detection
             results = pose.process(image)
-            print(results)
 
             # Recolor back to BGR
             image.flags.writeable = True
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
             
-
-            # # Extract landmarks
-            # try:
-            #     landmarks = results.pose_landmarks.landmark
-            #     sidebend(image, landmarks)             
-            # except:
-            #     pass
             
-#             global exercise_option
-#             print(exercise_option)
-#             if exercise_option == 0:
-#                 print("working")
-#                 draw_landmarks(image, results)             
+            global exercise_option
+            if exercise_option == 0 or exercise_option == "0":
+                draw_landmarks(image, results)
+            elif exercise_option == 1 or exercise_option == "1":
+                # Extract landmarks
+                try:
+                    landmarks = results.pose_landmarks.landmark              
+                    data = sidebend(thisDict, landmarks)
+                    thisDict['start'] = data['start'] 
+                    thisDict['counter'] = data['counter']
+                    thisDict['stage'] = data['stage']
+                    thisDict['completed'] = data['completed']
+                    # print(array)
+                # except:
+                #     pass
+                except Exception as e: print(e)
+                draw_landmarks(image, results)
 
-            # Extract landmarks
-            try:
-                landmarks = results.pose_landmarks.landmark              
-                print(thisDict)
-                data = sidebend(thisDict, landmarks)
-                thisDict['start'] = data['start'] 
-                thisDict['counter'] = data['counter']
-                thisDict['stage'] = data['stage']
-                thisDict['completed'] = data['completed']
+                # Render counter
+                # Setup status box
+                cv2.rectangle(image, (0,0), (625,73), (255, 255, 255), -1)
 
-                # print(array)
-            # except:
-            #     pass
-            except Exception as e: print(e)
-            
-            # Render counter
-            # Setup status box
-            cv2.rectangle(image, (0,0), (625,73), (255, 255, 255), -1)
-            #timer box
-            cv2.rectangle(image, (800,0), (1225,73), (255, 255, 255), -1)
-            # Rep data
-            cv2.putText(image, 'REPS', (15,12), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
-            cv2.putText(image, str(thisDict['counter']), 
-                        (10,60), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
-            
-            # Stage data
-            cv2.putText(image, 'STAGE', (100,12), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
-            cv2.putText(image, thisDict['stage'], 
-                        (60,60), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
+                # Rep data
+                cv2.putText(image, 'REPS', (15,12), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
+                cv2.putText(image, str(thisDict['counter']), 
+                            (10,60), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
+                
+                # Stage data
+                cv2.putText(image, 'STAGE', (100,12), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
+                cv2.putText(image, thisDict['stage'], 
+                            (60,60), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
 
-            #timer
-            # cv2.putText(image, displayTimer, 
-            #             (800,60), 
-            #             cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
+                #timer
+                # cv2.putText(image, displayTimer, 
+                #             (800,60), 
+                #             cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
+                
 
-            # Render detections
-            mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-                                    mp_drawing.DrawingSpec(color=(245,117,66), thickness=1, circle_radius=2), 
-                                    mp_drawing.DrawingSpec(color=(128,128,128), thickness=1, circle_radius=2) 
-                                    )               
-
-            
             ret,jpg=cv2.imencode('.jpg',image)
             yield(b'--frame\r\n'b'Content-Type:  image/jpeg\r\n\r\n' + jpg.tobytes() + b'\r\n\r\n')
 

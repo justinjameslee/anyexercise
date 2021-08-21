@@ -2115,6 +2115,11 @@ input[type=submit] {
   letter-spacing: 2px;
 }
 
+.card-title-exercise {
+  letter-spacing: 2px;
+  text-align: center;
+}
+
 #background .btn-exercise {
   font-family: "Poppins", sans-serif;
   font-weight: 500;
@@ -2217,4 +2222,9 @@ select::-ms-expand {
 
 #header-session .logo img {
   max-height: 40px;
+}
+
+.show-more {
+  color: #fff;
+  text-decoration: underline;
 }
