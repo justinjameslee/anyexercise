@@ -137,7 +137,7 @@ def gen():
 
     #Set dimensions
     cap.set(3, 900)
-    cap.set(4, 500)
+    cap.set(4, 700)
 
     ## Setup mediapipe instance
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
