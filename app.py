@@ -3,8 +3,14 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import time
+# import matplotlib.pyplot as plt
+
+
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
+
+mp_drawing_styles = mp.solutions.drawing_styles
+mp_holistic = mp.solutions.holistic
 
 app=Flask(__name__)
 app.static_folder = 'static'
@@ -15,7 +21,16 @@ def pose():
 
 @app.route('/login.html')
 def login():
+    # y = np.array([35, 25, 25, 15])
+
+    # plt.pie(y)
+    # plt.show() 
     return render_template('login.html')
+
+@app.route('/pie.html')
+def pie():
+    return render_template('pie.html')
+
   
 @app.route('/')
 def index():
@@ -46,7 +61,7 @@ def gen():
     displayTimer = None
 
     ## Setup mediapipe instance
-    with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+    with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
         while cap.isOpened():
             ret, frame = cap.read()
 
@@ -55,7 +70,7 @@ def gen():
             image.flags.writeable = False
         
             # Make detection
-            results = pose.process(image)
+            results = holistic.process(image)
         
             # Recolor back to BGR
             image.flags.writeable = True
@@ -135,7 +150,20 @@ def gen():
                         cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
             
             # Render detections
-            mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+
+            #left hand
+            mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
+                                    mp_drawing.DrawingSpec(color=(245,117,66), thickness=1, circle_radius=2), 
+                                    mp_drawing.DrawingSpec(color=(128,128,128), thickness=1, circle_radius=2) 
+                                    )
+
+            #right hand
+            mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
+                                    mp_drawing.DrawingSpec(color=(245,117,66), thickness=1, circle_radius=2), 
+                                    mp_drawing.DrawingSpec(color=(128,128,128), thickness=1, circle_radius=2) 
+                                    )      
+
+            mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS,
                                     mp_drawing.DrawingSpec(color=(245,117,66), thickness=1, circle_radius=2), 
                                     mp_drawing.DrawingSpec(color=(128,128,128), thickness=1, circle_radius=2) 
                                     )               

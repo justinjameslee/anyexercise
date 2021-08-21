@@ -1,0 +1,42 @@
+:root {
+    --size: 100px;
+    --bord: 10px;
+  }
+  
+  .chart {
+    width: var(--size);
+    height: var(--size);
+    margin: 1em auto;
+    border-radius: 50%;
+    background-image: conic-gradient(lightseagreen var(--value), lightgrey var(--value));
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .chart::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100% - var(--bord));
+    height: calc(100% - var(--bord));
+    background: white;
+    border-radius: inherit;
+  }
+  
+  p {
+    position: relative;
+    z-index: 1;
+    font-size: 2em;
+  }
+  
+  .x-60 {
+    --value: 60%;
+  }
+  
+  .x-20 {
+    --value: 20%;
+  }
