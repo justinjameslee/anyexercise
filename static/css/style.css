@@ -443,7 +443,6 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 24px;
 }
 
-
 #background .btn-get-started {
   font-family: "Poppins", sans-serif;
   font-weight: 500;
@@ -2114,7 +2113,6 @@ input[type=submit] {
 .card-title {
   letter-spacing: 2px;
   text-align: center;
-}
 
 #background .btn-exercise {
   font-family: "Poppins", sans-serif;
