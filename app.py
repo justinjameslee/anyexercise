@@ -3,6 +3,8 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import time
+import asyncio
+
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 
@@ -11,7 +13,9 @@ app=Flask(__name__)
 @app.route('/')
 def index():
     return render_template('index.html')
-
+@app.route('/video')
+def video():
+    return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 def calculate_angle(a,b,c):
     a = np.array(a) # First
@@ -20,7 +24,6 @@ def calculate_angle(a,b,c):
     #gets difference from end to mid, mid to first
     radians = np.arctan2(c[1]-b[1], c[0]-b[0]) - np.arctan2(a[1]-b[1], a[0]-b[0])
     angle = np.abs(radians*180.0/np.pi)
-    
     return angle
 
 
@@ -35,6 +38,8 @@ def gen():
     counter = 0 
     stage = None
     displayTimer = None
+    start = None
+    motionComplete = False
 
     ## Setup mediapipe instance
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
@@ -68,35 +73,40 @@ def gen():
                 rhip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
 
 
-                # Calculate angles for
+                # Calculate angles for hip and shoulder
                 lhipangle = calculate_angle(lknee, lhip, lshoulder)
                 rshoulderangle = calculate_angle(rhip, rshoulder, relbow)
                 
-                # Side bend counter logic
-                if rshoulderangle < 130 or rshoulderangle > 200: #to make sure right arm is raised
+                # Side bend logic and counter
+                if motionComplete   :
+                    stage = "straighten"
+                    if lhipangle > 175:
+                        motionComplete = False
+
+                elif rshoulderangle < 130 or rshoulderangle > 200: #to make sure right arm is raised
                     stage = "raise right arm"
-                    displayTimer = None
-                    held = "no"
-                elif lhipangle > 175: #r arm raised and raedy to side bend
+                    start = None
+
+                elif lhipangle > 175: #r arm raised and ready to side bend
                     stage = "bend"
-                    displayTimer = None
-                    held = "no"
-                if lhipangle < 165 and stage =='bend': #correct side bend angle acheived
-                    start = time.time()  #start timer
-                    stage = "hold"
+                    start = None
+                  
+                elif lhipangle < 175 and lhipangle > 165: #side bend angle not reached yet
+                    stage = "keep bending!"
+                    start = None
+                 
+                else: #r arm raised and side bending and correct side bend angle acheived
+                    if not start:
+                        start = time.time()  #start timer
+                    stage = "hold"  
                     displayTimer = "timer"
-                    held = "no"
-                    while (time.time()-start) < 2:
-                        held = 'yes'
-                        if lhipangle > 170:   #person straightens          
-                            held = 'no'
-                    if held == 'yes' and lhipangle < 165: #checks if held for more than 1 second
+                    if start and (time.time()-start) > 2: #held for 2 seconds
                         stage="straighten"
-                        if lhipangle > 170:
+                        if lhipangle > 175 and not motionComplete:
+                            motionComplete = True
                             counter +=1
                             print(counter)
-                            print(lhipangle)
-                        
+                            print(lhipangle)                           
             except:
                 pass
             
@@ -134,8 +144,5 @@ def gen():
             ret,jpg=cv2.imencode('.jpg',image)
             yield(b'--frame\r\n'b'Content-Type:  image/jpeg\r\n\r\n' + jpg.tobytes() + b'\r\n\r\n')
                  
-@app.route('/video')
-def video():
-    return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 app.run(debug=True)
