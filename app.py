@@ -57,8 +57,8 @@ def calculate_angle(a,b,c):
 def draw_landmarks(image, results):
     # Render detections
     mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-        mp_drawing.DrawingSpec(color=(245,117,66), thickness=1, circle_radius=2), 
-        mp_drawing.DrawingSpec(color=(128,128,128), thickness=1, circle_radius=2) 
+        mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=2), 
+        mp_drawing.DrawingSpec(color=(128,128,128), thickness=2, circle_radius=2) 
         )               
 
 def sidebend(data, landmarks):
@@ -121,7 +121,7 @@ def bicepcurl(data, landmarks):
         rbicepangle = 360-rbicepangle  #prevent 360 
     if rbicepangle > 160:
         stage = "curl right arm"
-    if stage =='curl right arm' and rbicepangle < 30 :
+    if stage =='curl right arm' and rbicepangle < 50 :
         stage="release"
         counter +=1
     data = dict({
@@ -214,7 +214,41 @@ def gen():
 
                 # Stage data
                 cv2.putText(image, thisDict['stage'], 
-                            (0,450), 
+                            (0,150), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 6, cv2.LINE_AA) #2 is size, 5 is thickness
+
+                #timer
+                # cv2.putText(image, displayTimer, 
+                #             (800,60), 
+                #             cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
+            
+            elif exercise_option == 2 or exercise_option == "2":
+                # Extract landmarks
+                try:
+                    landmarks = results.pose_landmarks.landmark              
+                    #data = sidebend(thisDict, landmarks)
+                    data = bicepcurl(thisDict, landmarks)
+                    thisDict['start'] = data['start'] 
+                    thisDict['counter'] = data['counter']
+                    thisDict['stage'] = data['stage']
+                    thisDict['completed'] = data['completed']
+                    # print(array)
+                # except:
+                #     pass
+                except Exception as e: print(e)
+                draw_landmarks(image, results)
+
+                # Render counter
+                # Rep data
+                cv2.putText(image, 'REPS: ', (0,60), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 6, cv2.LINE_AA)
+                cv2.putText(image, str(thisDict['counter']), 
+                            (195,60), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 6, cv2.LINE_AA)
+
+                # Stage data
+                cv2.putText(image, thisDict['stage'], 
+                            (0,150), 
                             cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 6, cv2.LINE_AA) #2 is size, 5 is thickness
 
                 #timer
