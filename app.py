@@ -3,16 +3,29 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import time
-import asyncio
 
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 
 app=Flask(__name__)
+app.static_folder = 'static'
 
+@app.route('/pose.html')
+def pose():
+    return render_template('pose.html')
+
+@app.route('/login.html')
+def login():
+    return render_template('login.html')
+
+@app.route('/dashboard.html')
+def dashboard():
+    return render_template('dashboard.html')
+  
 @app.route('/')
 def index():
     return render_template('index.html')
+  
 @app.route('/video')
 def video():
     return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
@@ -26,14 +39,14 @@ def calculate_angle(a,b,c):
     angle = np.abs(radians*180.0/np.pi)
     return angle
 
-
 def gen():
     # Get webcam video
     cap = cv2.VideoCapture(0)
 
     #Set dimensions
-    cap.set(3, 1920)
-    cap.set(4, 1080)
+    cap.set(3, 1280)
+    cap.set(4, 720)
+    
     # Curl counter variables
     counter = 0 
     stage = None
@@ -136,6 +149,5 @@ def gen():
             
             ret,jpg=cv2.imencode('.jpg',image)
             yield(b'--frame\r\n'b'Content-Type:  image/jpeg\r\n\r\n' + jpg.tobytes() + b'\r\n\r\n')
-                 
 
-app.run(debug=True)
+app.run(debug='true')
