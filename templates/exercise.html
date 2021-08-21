@@ -8,11 +8,13 @@
         <div class="row justify-content-center">
             <div class="card shadow card-exercise">
                 <div class="card-body">
-                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1 card-title">Current Exercise</div>
+                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1 card-title-exercise">Current Exercise</div>
                     <form action="/exercise" method="POST">
                         <select name="exercise_select">
                             <option value="0" {% if exercise_option == "0" %} selected {% endif %}>Detection</option>
                             <option value="1" {% if exercise_option == "1" %} selected {% endif %}>Side Bend</option>
+                            <option value="2" {% if exercise_option == "2" %} selected {% endif %}>Bicep Curl</option>
+                            <option value="3" {% if exercise_option == "3" %} selected {% endif %}>Leg Raise</option>
                         </select>
                         <input type="submit" class="fadeIn" value="Change">
                         <div class="justify-content-center align-items-center">

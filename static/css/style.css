@@ -2113,6 +2113,10 @@ input[type=submit] {
 
 .card-title {
   letter-spacing: 2px;
+}
+
+.card-title-exercise {
+  letter-spacing: 2px;
   text-align: center;
 }
 
@@ -2218,4 +2222,9 @@ select::-ms-expand {
 
 #header-session .logo img {
   max-height: 40px;
+}
+
+.show-more {
+  color: #fff;
+  text-decoration: underline;
 }
