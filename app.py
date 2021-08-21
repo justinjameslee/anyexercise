@@ -39,21 +39,148 @@ def calculate_angle(a,b,c):
     angle = np.abs(radians*180.0/np.pi)
     return angle
 
+
+def sidebend(image, landmarks):
+    #counter variables
+    counter = 0 
+    stage = None
+    start = None
+    completed = False
+# Get coordinates
+    lshoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+    lhip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
+    lknee = [landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].x,landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].y]
+    rshoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
+    relbow = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y]
+    rhip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
+
+    # Calculate angles for hip and shoulder
+    lhipangle = calculate_angle(lknee, lhip, lshoulder)
+    rshoulderangle = calculate_angle(rhip, rshoulder, relbow)
+                    
+    if rshoulderangle < 130 or rshoulderangle > 200: #to make sure right arm is raised
+        stage = "raise right arm"
+        start = None
+    elif lhipangle > 175: #r arm raised and ready to side bend
+        stage = "bend"
+        start = None
+        print(completed)
+        if completed == True:
+            counter +=1
+            print(counter)
+            completed = False #reset completed to false
+    if lhipangle < 175 and lhipangle > 165 and (stage == "bend" or stage == "hold"): #side bend angle not reached yet
+        stage = "keep bending!"
+        start = None
+    if stage == "keep bending!" and lhipangle < 165:
+        start = time.time()  #start timer
+        stage = "hold"  
+        displayTimer = "timer"
+        print(stage)
+    if stage == "hold" and (time.time()-start) > 2: #held for 2 seconds
+        stage="straighten"
+        completed = True
+        print('held')   
+
+    # Render counter
+    # Setup status box
+    cv2.rectangle(image, (0,0), (625,73), (255, 255, 255), -1)
+    #timer box
+    cv2.rectangle(image, (800,0), (1225,73), (255, 255, 255), -1)
+     # Rep data
+    cv2.putText(image, 'REPS', (15,12), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
+    cv2.putText(image, str(counter), 
+                (10,60), 
+                cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
+    
+    # Stage data
+    cv2.putText(image, 'STAGE', (100,12), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
+    cv2.putText(image, stage, 
+                (60,60), 
+                cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
+
+    #timer
+    cv2.putText(image, displayTimer, 
+                (800,60), 
+                cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
+    return 
+
+def squat(image, landmarks):
+    #counter variables
+    counter = 0 
+    stage = None
+    start = None
+    completed = False
+# Get coordinates
+    lshoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+    lhip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
+    lknee = [landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].x,landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].y]
+    rshoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
+    relbow = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y]
+    rhip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
+
+    # Calculate angles for hip and shoulder
+    lhipangle = calculate_angle(lknee, lhip, lshoulder)
+    rshoulderangle = calculate_angle(rhip, rshoulder, relbow)
+                    
+    if rshoulderangle < 130 or rshoulderangle > 200: #to make sure right arm is raised
+        stage = "raise right arm"
+        start = None
+    elif lhipangle > 175: #r arm raised and ready to side bend
+        stage = "bend"
+        start = None
+        print(completed)
+        if completed == True:
+            counter +=1
+            print(counter)
+            completed = False #reset completed to false
+    if lhipangle < 175 and lhipangle > 165 and (stage == "bend" or stage == "hold"): #side bend angle not reached yet
+        stage = "keep bending!"
+        start = None
+    if stage == "keep bending!" and lhipangle < 165:
+        start = time.time()  #start timer
+        stage = "hold"  
+        displayTimer = "timer"
+        print(stage)
+    if stage == "hold" and (time.time()-start) > 2: #held for 2 seconds
+        stage="straighten"
+        completed = True
+        print('held')   
+
+    # Render counter
+    # Setup status box
+    cv2.rectangle(image, (0,0), (625,73), (255, 255, 255), -1)
+    #timer box
+    cv2.rectangle(image, (800,0), (1225,73), (255, 255, 255), -1)
+     # Rep data
+    cv2.putText(image, 'REPS', (15,12), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
+    cv2.putText(image, str(counter), 
+                (10,60), 
+                cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
+    
+    # Stage data
+    cv2.putText(image, 'STAGE', (100,12), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
+    cv2.putText(image, stage, 
+                (60,60), 
+                cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
+
+    #timer
+    cv2.putText(image, displayTimer, 
+                (800,60), 
+                cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
+    return 
+
 def gen():
     # Get webcam video
     cap = cv2.VideoCapture(0)
 
     #Set dimensions
-    cap.set(3, 1280)
-    cap.set(4, 720)
-    
-    # Curl counter variables
-    counter = 0 
-    stage = None
-    displayTimer = None
-    start = None
-    motionComplete = False
-    completed = False
+    cap.set(3, 1920)
+    cap.set(4, 1080)
 
     ## Setup mediapipe instance
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
@@ -74,72 +201,9 @@ def gen():
             # Extract landmarks
             try:
                 landmarks = results.pose_landmarks.landmark
-                
-                # Get coordinates
-                lshoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
-                lelbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
-                #lwrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
-                lhip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
-                lknee = [landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].x,landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].y]
-                rshoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
-                relbow = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y]
-                #rwrist = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
-                rhip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
-
-                # Calculate angles for hip and shoulder
-                lhipangle = calculate_angle(lknee, lhip, lshoulder)
-                rshoulderangle = calculate_angle(rhip, rshoulder, relbow)
-                                
-                if rshoulderangle < 130 or rshoulderangle > 200: #to make sure right arm is raised
-                    stage = "raise right arm"
-                    start = None
-                elif lhipangle > 175: #r arm raised and ready to side bend
-                    stage = "bend"
-                    start = None
-                    print(completed)
-                    if completed == True:
-                        counter +=1
-                        print(counter)
-                        completed = False #reset completed to false
-                if lhipangle < 175 and lhipangle > 165 and (stage == "bend" or stage == "hold"): #side bend angle not reached yet
-                    stage = "keep bending!"
-                    start = None
-                if stage == "keep bending!" and lhipangle < 165:
-                    start = time.time()  #start timer
-                    stage = "hold"  
-                    displayTimer = "timer"
-                    print(stage)
-                if stage == "hold" and (time.time()-start) > 2: #held for 2 seconds
-                    stage="straighten"
-                    completed = True
-                    print('held')                          
+                sidebend(image, landmarks)             
             except:
                 pass
-            
-            # Render counter
-            # Setup status box
-            cv2.rectangle(image, (0,0), (625,73), (255, 255, 255), -1)
-            #timer box
-            cv2.rectangle(image, (800,0), (1225,73), (255, 255, 255), -1)
-            
-            # Rep data
-            cv2.putText(image, 'REPS', (15,12), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
-            cv2.putText(image, str(counter), 
-                        (10,60), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
-            
-            # Stage data
-            cv2.putText(image, 'STAGE', (100,12), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
-            cv2.putText(image, stage, 
-                        (60,60), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
-
-            #timer
-            cv2.putText(image, displayTimer, 
-                        (800,60), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
             
             # Render detections
             mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
