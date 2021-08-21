@@ -177,9 +177,5 @@ def gen():
             
             ret,jpg=cv2.imencode('.jpg',image)
             yield(b'--frame\r\n'b'Content-Type:  image/jpeg\r\n\r\n' + jpg.tobytes() + b'\r\n\r\n')
-                 
-@app.route('/video')
-def video():
-    return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 app.run(debug=True)
