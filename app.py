@@ -40,6 +40,7 @@ def gen():
     displayTimer = None
     start = None
     motionComplete = False
+    completed = False
 
     ## Setup mediapipe instance
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
@@ -72,24 +73,22 @@ def gen():
                 #rwrist = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
                 rhip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
 
-
                 # Calculate angles for hip and shoulder
                 lhipangle = calculate_angle(lknee, lhip, lshoulder)
                 rshoulderangle = calculate_angle(rhip, rshoulder, relbow)
-                
-                # Side bend logic and counter
-                # if motionComplete   :
-                #     stage = "straighten"
-                #     if lhipangle > 175:
-                #         motionComplete = False
-
+                                
                 if rshoulderangle < 130 or rshoulderangle > 200: #to make sure right arm is raised
                     stage = "raise right arm"
                     start = None
                 elif lhipangle > 175: #r arm raised and ready to side bend
                     stage = "bend"
                     start = None
-                if lhipangle < 175 and lhipangle > 165 and stage == "bend": #side bend angle not reached yet
+                    print(completed)
+                    if completed == True:
+                        counter +=1
+                        print(counter)
+                        completed = False #reset completed to false
+                if lhipangle < 175 and lhipangle > 165 and (stage == "bend" or stage == "hold"): #side bend angle not reached yet
                     stage = "keep bending!"
                     start = None
                 if stage == "keep bending!" and lhipangle < 165:
@@ -99,24 +98,8 @@ def gen():
                     print(stage)
                 if stage == "hold" and (time.time()-start) > 2: #held for 2 seconds
                     stage="straighten"
-                    if lhipangle > 170:
-                        stage="bend"
-                        counter +=1
-                        print('hello')
-                        print(counter)
-                        print(lhipangle)
-                # else: #r arm raised and side bending and correct side bend angle acheived
-                #     if not start:
-                #         start = time.time()  #start timer
-                #     stage = "hold"  
-                #     displayTimer = "timer"
-                #     print(stage)
-                #     if start and (time.time()-start) > 2: #held for 2 seconds
-                #         stage="straighten"
-                #         if lhipangle > 175:
-                #             counter +=1
-                #             print(counter)
-                #             print(lhipangle)                           
+                    completed = True
+                    print('held')                          
             except:
                 pass
             
