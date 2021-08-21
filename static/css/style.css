@@ -443,7 +443,6 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 24px;
 }
 
-
 #background .btn-get-started {
   font-family: "Poppins", sans-serif;
   font-weight: 500;
@@ -2113,7 +2112,7 @@ input[type=submit] {
 
 .card-title {
   letter-spacing: 2px;
-}
+  text-align: center;
 
 #background .btn-exercise {
   font-family: "Poppins", sans-serif;
@@ -2138,4 +2137,54 @@ input[type=submit] {
 	width: 30px;
 	height: 30px;
 	margin-right: 10px;
+}
+
+select {
+  background: none repeat scroll 0 0 #FFFFFF;
+  border: 1px solid #E5E5E5;
+  border-radius: 5px 5px 5px 5px;
+  box-shadow: 0 0 10px #E8E8E8 inset;
+  height: 50px;
+  margin: 5px 20px 40px 20px;
+  width: 150px;
+}
+
+/* CAUTION: IE hackery ahead */
+select::-ms-expand { 
+    display: none; /* remove default arrow on ie10 and ie11 */
+}
+
+/* target Internet Explorer 9 to undo the custom arrow */
+@media screen and (min-width:0\0) {
+    select {
+        background:none\9;
+        padding: 5px\9;
+    } 
+}
+
+
+#background .btn-example {
+  font-size: 16px;
+  padding: 10px 0 8px 40px;
+  transition: 0.5s;
+  margin: 10px 0 0 32%;
+  color: #56baed;
+  position: relative;
+}
+
+#background .btn-example i {
+  color: #56baed;
+  font-size: 32px;
+  position: absolute;
+  left: 0;
+  top: 7px;
+  transition: 0.3s;
+}
+
+#background .btn-example:hover i {
+  color: #39ace7;
+}
+
+.card-exercise {
+  margin-top: 25px;
 }

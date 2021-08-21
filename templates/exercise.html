@@ -1,0 +1,28 @@
+{% extends 'base.html'%}{% block content %}
+
+<section id="background" class="d-flex">
+    <div class="container">
+        <div class="row justify-content-center">
+            <img src="{{ url_for('video') }}">
+        </div>
+        <div class="row justify-content-center">
+            <div class="card shadow card-exercise">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1 card-title">Current Exercise</div>
+                    <form action="/exercise" method="POST">
+                        <select name="exercise_select">
+                            <option value="0" {% if exercise_option == "0" %} selected {% endif %}>Detection</option>
+                            <option value="1" {% if exercise_option == "1" %} selected {% endif %}>Side Bend</option>
+                        </select>
+                        <input type="submit" class="fadeIn" value="Change">
+                        <div class="justify-content-center align-items-center">
+                            <a href="https://www.youtube.com/watch?v=jDDaplaOz7Q" class="btn-example justify-content-center" data-vbtype="video" data-autoplay="true"> Watch Video <i class="icofont-play-alt-2"></i></a>
+                        </div>
+                    </form>  
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
