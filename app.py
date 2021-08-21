@@ -78,35 +78,45 @@ def gen():
                 rshoulderangle = calculate_angle(rhip, rshoulder, relbow)
                 
                 # Side bend logic and counter
-                if motionComplete   :
-                    stage = "straighten"
-                    if lhipangle > 175:
-                        motionComplete = False
+                # if motionComplete   :
+                #     stage = "straighten"
+                #     if lhipangle > 175:
+                #         motionComplete = False
 
-                elif rshoulderangle < 130 or rshoulderangle > 200: #to make sure right arm is raised
+                if rshoulderangle < 130 or rshoulderangle > 200: #to make sure right arm is raised
                     stage = "raise right arm"
                     start = None
-
                 elif lhipangle > 175: #r arm raised and ready to side bend
                     stage = "bend"
                     start = None
-                  
-                elif lhipangle < 175 and lhipangle > 165: #side bend angle not reached yet
+                if lhipangle < 175 and lhipangle > 165 and stage == "bend": #side bend angle not reached yet
                     stage = "keep bending!"
                     start = None
-                 
-                else: #r arm raised and side bending and correct side bend angle acheived
-                    if not start:
-                        start = time.time()  #start timer
+                if stage == "keep bending!" and lhipangle < 165:
+                    start = time.time()  #start timer
                     stage = "hold"  
                     displayTimer = "timer"
-                    if start and (time.time()-start) > 2: #held for 2 seconds
-                        stage="straighten"
-                        if lhipangle > 175 and not motionComplete:
-                            motionComplete = True
-                            counter +=1
-                            print(counter)
-                            print(lhipangle)                           
+                    print(stage)
+                if stage == "hold" and (time.time()-start) > 2: #held for 2 seconds
+                    stage="straighten"
+                    if lhipangle > 170:
+                        stage="bend"
+                        counter +=1
+                        print('hello')
+                        print(counter)
+                        print(lhipangle)
+                # else: #r arm raised and side bending and correct side bend angle acheived
+                #     if not start:
+                #         start = time.time()  #start timer
+                #     stage = "hold"  
+                #     displayTimer = "timer"
+                #     print(stage)
+                #     if start and (time.time()-start) > 2: #held for 2 seconds
+                #         stage="straighten"
+                #         if lhipangle > 175:
+                #             counter +=1
+                #             print(counter)
+                #             print(lhipangle)                           
             except:
                 pass
             
