@@ -4,6 +4,8 @@ import mediapipe as mp
 import numpy as np
 import time
 
+from numpy.core.shape_base import vstack
+
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 
@@ -64,7 +66,6 @@ def sidebend(data, landmarks):
     counter = data['counter']
     stage = data['stage']
     completed = data['completed']
-    print('hello')
     # Get coordinates
     lshoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
     lhip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
@@ -75,18 +76,16 @@ def sidebend(data, landmarks):
 
     # Calculate angles for hip and shoulder
     lhipangle = calculate_angle(lknee, lhip, lshoulder)
-    rshoulderangle = calculate_angle(rhip, rshoulder, relbow) 
-    print (rshoulderangle)             
+    rshoulderangle = calculate_angle(rhip, rshoulder, relbow)           
     if rshoulderangle < 130 or rshoulderangle > 200: #to make sure right arm is raised
         stage = "raise right arm"
-        start = None
+        start = False
     elif lhipangle > 175: #r arm raised and ready to side bend
         stage = "bend"
-        start = None
+        start = False
         # print(completed)
         if completed == True:
             counter +=1
-            print(counter)
             completed = False #reset completed to false
     if lhipangle < 175 and lhipangle > 165 and (stage == "bend" or stage == "hold"): #side bend angle not reached yet
         stage = "keep bending!"
@@ -95,11 +94,9 @@ def sidebend(data, landmarks):
         start = time.time()  #start timer
         stage = "hold"  
         displayTimer = "timer"
-        print(stage)
     if stage == "hold" and (time.time()-start) > 2: #held for 2 seconds
         stage="straighten"
         completed = True
-        print('held')   
     data = dict({
                 "start": start,
                 "counter": counter,
@@ -108,24 +105,47 @@ def sidebend(data, landmarks):
                 })
     return data
 
+def bicepcurl(data, landmarks):
+    start = data['start'] 
+    counter = data['counter']
+    stage = data['stage']
+    completed = data['completed']
    
-def falldetect(image, landmarks):
+    rshoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
+    relbow = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y]
+    rwrist = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
 
-    # Get coordinates
-    nose = [landmarks[mp_pose.PoseLandmark.NOSE.value].x,landmarks[mp_pose.PoseLandmark.NOSE.value].y]
-    leye = [landmarks[mp_pose.PoseLandmark.leye.value].x,landmarks[mp_pose.PoseLandmark.leye.value].y]
-    reye = [landmarks[mp_pose.PoseLandmark.reye.value].x,landmarks[mp_pose.PoseLandmark.reye.value].y]
+    # Calculate elbow angle
+    rbicepangle = calculate_angle( rshoulder, relbow, rwrist)     
+    if rbicepangle > 180:
+        rbicepangle = 360-rbicepangle  #prevent 360 
+    if rbicepangle > 160:
+        stage = "curl right arm"
+    if stage =='curl right arm' and rbicepangle < 30 :
+        stage="release"
+        counter +=1
+    data = dict({
+                "start": start,
+                "counter": counter,
+                "stage": stage,
+                "completed": completed
+                })
+    return data
+   
+# def falldetect(noseArr, nose): absolutely does not work
 
-    # Calculate change in y pos
-                    
-    # Render counter
-    # Setup status box
-    cv2.rectangle(image, (0,0), (625,73), (255, 255, 255), -1)
-     # Rep data
-    cv2.putText(image, 'REPS', (15,12), 
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
-  
-    return 
+#     if len(noseArr) < 2 :
+#         newArr = [noseArr, nose]
+#     else:
+#         newArr = noseArr[1:2]
+#         newArr = [noseArr[0], nose]
+#     diff = noseArr[0] - noseArr[1]
+#     print(newArr)
+#     print(diff)
+#     # Calculate change in y pos
+#     if (diff)>10: #check changes, y is larger at the top of the screen
+#         return newArr
+#     return newArr
 
 def gen():
     #counter variables
@@ -133,11 +153,14 @@ def gen():
     stage = ''
     start = False
     completed = False
+    fall = False
+    fallArr = [None]
     thisDict = {
                 "start": start,
                 "counter": counter,
                 "stage": stage,
-                "completed": completed
+                "completed": completed,
+                "fall": fall
             }
     # Get webcam video
     cap = cv2.VideoCapture(0)
@@ -162,7 +185,6 @@ def gen():
             image.flags.writeable = True
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
             
-            
             global exercise_option
             if exercise_option == 0 or exercise_option == "0":
                 draw_landmarks(image, results)
@@ -171,6 +193,7 @@ def gen():
                 try:
                     landmarks = results.pose_landmarks.landmark              
                     data = sidebend(thisDict, landmarks)
+                    # data = bicepcurl(thisDict, landmarks)
                     thisDict['start'] = data['start'] 
                     thisDict['counter'] = data['counter']
                     thisDict['stage'] = data['stage']
@@ -182,22 +205,17 @@ def gen():
                 draw_landmarks(image, results)
 
                 # Render counter
-                # Setup status box
-                cv2.rectangle(image, (0,0), (625,73), (255, 255, 255), -1)
-
                 # Rep data
-                cv2.putText(image, 'REPS', (15,12), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
+                cv2.putText(image, 'REPS: ', (0,60), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 6, cv2.LINE_AA)
                 cv2.putText(image, str(thisDict['counter']), 
-                            (10,60), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
-                
+                            (195,60), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 6, cv2.LINE_AA)
+
                 # Stage data
-                cv2.putText(image, 'STAGE', (100,12), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
                 cv2.putText(image, thisDict['stage'], 
-                            (60,60), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
+                            (0,450), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 6, cv2.LINE_AA) #2 is size, 5 is thickness
 
                 #timer
                 # cv2.putText(image, displayTimer, 
