@@ -3,7 +3,6 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import time
-# import matplotlib.pyplot as plt
 
 
 mp_drawing = mp.solutions.drawing_utils
@@ -21,16 +20,7 @@ def pose():
 
 @app.route('/login.html')
 def login():
-    # y = np.array([35, 25, 25, 15])
-
-    # plt.pie(y)
-    # plt.show() 
     return render_template('login.html')
-
-@app.route('/pie.html')
-def pie():
-    return render_template('pie.html')
-
   
 @app.route('/')
 def index():
