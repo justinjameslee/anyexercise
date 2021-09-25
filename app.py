@@ -131,7 +131,42 @@ def bicepcurl(data, landmarks):
                 "completed": completed
                 })
     return data
+
+def shoulderraise(data, landmarks):
+    start = data['start'] 
+    counter = data['counter']
+    stage = data['stage']
+    completed = data['completed']
    
+    rshoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
+    rhip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
+    rwrist = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
+    lshoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+    lhip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
+    lwrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
+
+    # Calculate shoulder angle
+    rshoulderangle = calculate_angle( rhip, rshoulder, rwrist)
+    lshoulderangle = calculate_angle( lhip, lshoulder, lwrist)
+    if rshoulderangle > 180:
+        rshoulderangle = 360-rshoulderangle
+    if stage == "" and (rshoulderangle < 80 or rshoulderangle > 110):
+        stage = "extend arm straight"
+    elif stage == 'extend arm straight' and (rshoulderangle > 80 and rshoulderangle < 110):
+        stage = 'raise right arm'
+    if stage == 'raise right arm' and rshoulderangle > 145 :
+        stage="lower right arm"
+    if stage == 'lower right arm' and rshoulderangle < 45:
+        stage = "raise right arm"
+        counter +=1    
+    data = dict({
+                "start": start,
+                "counter": counter,
+                "stage": stage,
+                "completed": completed
+                })
+    return data
+
 # def falldetect(noseArr, nose): absolutely does not work
 
 #     if len(noseArr) < 2 :
@@ -227,7 +262,8 @@ def gen():
                 try:
                     landmarks = results.pose_landmarks.landmark              
                     #data = sidebend(thisDict, landmarks)
-                    data = bicepcurl(thisDict, landmarks)
+                    # data = bicepcurl(thisDict, landmarks)
+                    data = shoulderraise(thisDict, landmarks)
                     thisDict['start'] = data['start'] 
                     thisDict['counter'] = data['counter']
                     thisDict['stage'] = data['stage']
@@ -250,11 +286,6 @@ def gen():
                 cv2.putText(image, thisDict['stage'], 
                             (0,150), 
                             cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 6, cv2.LINE_AA) #2 is size, 5 is thickness
-
-                #timer
-                # cv2.putText(image, displayTimer, 
-                #             (800,60), 
-                #             cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
                 
 
             ret,jpg=cv2.imencode('.jpg',image)
