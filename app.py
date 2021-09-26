@@ -148,16 +148,22 @@ def shoulderraise(data, landmarks):
     # Calculate shoulder angle
     rshoulderangle = calculate_angle( rhip, rshoulder, rwrist)
     lshoulderangle = calculate_angle( lhip, lshoulder, lwrist)
+
+    # preventing 360 on both arms
     if rshoulderangle > 180:
         rshoulderangle = 360-rshoulderangle
-    if stage == "" and (rshoulderangle < 80 or rshoulderangle > 110):
-        stage = "extend arm straight"
-    elif stage == 'extend arm straight' and (rshoulderangle > 80 and rshoulderangle < 110):
-        stage = 'raise right arm'
-    if stage == 'raise right arm' and rshoulderangle > 145 :
-        stage="lower right arm"
-    if stage == 'lower right arm' and rshoulderangle < 45:
-        stage = "raise right arm"
+    if lshoulderangle > 180:
+        lshoulderangle = 360-lshoulderangle
+
+    # logic to start 
+    if stage == "" and (rshoulderangle < 80 or rshoulderangle > 110) and (lshoulderangle < 80 or lshoulderangle > 110):
+        stage = "extend both arms straight"
+    elif stage == 'extend both arms straight' and (rshoulderangle > 80 and rshoulderangle < 110) and (lshoulderangle > 80 and lshoulderangle < 110):
+        stage = 'raise both arms'
+    if stage == 'raise both arms' and rshoulderangle > 145 and lshoulderangle > 145:
+        stage="lower both arms"
+    if stage == 'lower both arms' and rshoulderangle < 45 and lshoulderangle < 45:
+        stage = "raise both arms"
         counter +=1    
     data = dict({
                 "start": start,
